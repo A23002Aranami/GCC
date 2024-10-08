@@ -35,7 +35,7 @@ PlayScene::PlayScene()
 
 				//キーバインドの設定
 				p->SetKeyBind(csv->GetKeyDef(i, 4), csv->GetKeyDef(i, 5), csv->GetKeyDef(i, 6), csv->GetKeyDef(i, 7), csv->GetKeyDef(i, 8),csv->GetKeyDef(i,9), csv->GetKeyDef(i, 10));
-				p->LoadMesh(csv->GetString(i,11));
+				//p->LoadMesh(csv->GetString(i,11));
 				p->LoadColMesh(csv->GetString(i, 12));
 
 				//プレイヤーの番号を割り振り
@@ -103,10 +103,13 @@ PlayScene::~PlayScene()
 
 void PlayScene::Update()
 {
-	//Dancer全滅でTitleScene
-	std::list< Dancer* > dancers = ObjectManager::FindGameObjects<Dancer>();
-	if (dancers.size() == 0) {
-		//SceneManager::ChangeScene("ResultScene");
+	//Playerが残り一人になったらゲーム終了
+	std::list< Player* > pls = ObjectManager::FindGameObjects<Player>();
+	if (pls.size() <= 1) {
+		Score* sc = ObjectManager::FindGameObject<Score>();
+		Player* pl = ObjectManager::FindGameObject<Player>();
+		sc->SetWinner( pl->plNo);
+		SceneManager::ChangeScene("ResultScene");
 	}
 }
 

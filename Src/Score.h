@@ -23,7 +23,13 @@ public:
 		score += val;
 	}
 
+	//ŸÒ‚ğİ’è‚·‚é
+	void SetWinner(int no) { winner = no; }
+
+	int GetWinner() { return winner; };
+
 private:
 	int score;//ƒXƒRƒA
+	int winner;
 	
 };

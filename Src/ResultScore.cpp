@@ -40,8 +40,8 @@ void ResultScore::Draw()
 	Score* sc = ObjectManager::FindGameObject<Score>();
 	
 	char str[64];//•¶Žš—ñ
-	sprintf_s<64>(str, "SCORE: %06d", viewScore);//printf‚ÌŒ`‚Å•¶Žš—ñ‚É“ü‚ê‚Ä‚­‚ê‚é
-	
+	//sprintf_s<64>(str, "SCORE: %06d", viewScore);//printf‚ÌŒ`‚Å•¶Žš—ñ‚É“ü‚ê‚Ä‚­‚ê‚é
+	sprintf_s<64>(str, "WINNER: %dP!!!", sc->GetWinner());
 
 	GameDevice()->m_pFont->Draw(
 		strX, strY, "RESULT", 128, RGB(255, 255, 255));

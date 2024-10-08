@@ -79,7 +79,8 @@ void Player::Update()
 	//死亡処理Todo:死亡状態のUpdateを作成する（後回し）
 	if (transform.position.y <= DeadLine)
 	{
-		SceneManager::ChangeScene("ResultScene");
+		//SceneManager::ChangeScene("ResultScene");
+		DestroyMe();
 	}
 
 	//プレイヤー探索
