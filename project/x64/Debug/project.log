@@ -1,0 +1,5 @@
+﻿  PlayScene.cpp
+C:\Users\A23002\Desktop\GC甲子園用\ForGCC\Src\Map.h(51,3): warning C4091: 'static ': 変数が何も宣言されていないときは、'const Block::State' の左辺を無視します。
+  SceneFactory.cpp
+  コードを生成中...
+  project.vcxproj -> C:\Users\A23002\Desktop\GC甲子園用\ForGCC\x64\Debug\project.exe

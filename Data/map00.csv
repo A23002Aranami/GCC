@@ -1,0 +1,3 @@
+物体,X座標,Y座標,Z座標,,,,,,,,判定用メッシュ,描画用メッシュ
+PLAYER,4.5,0,4.5,W,S,A,D,None,None,F,colMesh.mesh,mochiAlter.mesh
+PLAYER,5.5,0,5.5,UP,DOWN,LEFT,RIGHT,None,None,SLASH,colMesh.mesh,mochiAlter.mesh
