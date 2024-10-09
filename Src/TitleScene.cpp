@@ -30,5 +30,7 @@ void TitleScene::Update()
 
 void TitleScene::Draw()
 {
-	GameDevice()->m_pFont->Draw(positionX, 20, "TitleScene", 16, RGB(255, 0, 0),1.0f);
+	GameDevice()->m_pFont->Draw(250, 200, "HOPPING BATTLE", 128, RGB(255, 0, 0),1.0f);
+	GameDevice()->m_pFont->Draw(310, 500, "PUSH P TO START", 100, RGB(255, 0, 0), 1.0f);
+
 }

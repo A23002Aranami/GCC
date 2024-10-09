@@ -8,7 +8,7 @@ ResultScore::ResultScore()
 	deray = 0.5f;
 	strX = 50;
 	strY = 150;
-	Row = 150;
+	Row = 110;
 }
 
 ResultScore::~ResultScore()
@@ -41,22 +41,33 @@ void ResultScore::Draw()
 	
 	char str[64];//•¶Žš—ñ
 	//sprintf_s<64>(str, "SCORE: %06d", viewScore);//printf‚ÌŒ`‚Å•¶Žš—ñ‚É“ü‚ê‚Ä‚­‚ê‚é
-	sprintf_s<64>(str, "WINNER: %dP!!!", sc->GetWinner());
-
-	GameDevice()->m_pFont->Draw(
-		strX, strY, "RESULT", 128, RGB(255, 255, 255));
+	
 
 	if (resultTimer > deray) {
 		GameDevice()->m_pFont->Draw(
-			strX, strY+Row, str, 128, RGB(255, 255, 255));
+			strX, strY, "RESULT", 100, RGB(255, 255, 255));
+		
 	}
-	if (endCntUp > deray) {
+	if (resultTimer > deray*2) {
+		sprintf_s<64>(str, "WINNER: %dP!!!", sc->GetWinner());
 		GameDevice()->m_pFont->Draw(
-			strX, strY+Row*2, "PUSH 'T' KEY !!!", 128, RGB(255, 255, 255));
+			strX, strY + Row, str, 100, RGB(255, 255, 255));
+		
+	}
+	if (resultTimer > deray * 3)
+	{
+		GameDevice()->m_pFont->Draw(
+			strX, strY + Row * 2, "PUSH 'T' TO TITLE !!!", 100, RGB(255, 255, 255));
+		GameDevice()->m_pFont->Draw(
+			strX, strY + Row * 3, "PUSH 'R' TO RESTART !!!", 100, RGB(255, 255, 255));
 
-		if(GameDevice()->m_pDI->CheckKey(KD_TRG, DIK_T))
+		if (GameDevice()->m_pDI->CheckKey(KD_TRG, DIK_T))
 		{
 			SceneManager::ChangeScene("TitleScene");
+		}
+		if (GameDevice()->m_pDI->CheckKey(KD_TRG, DIK_R))
+		{
+			SceneManager::ChangeScene("PlayScene");
 		}
 	}
 }

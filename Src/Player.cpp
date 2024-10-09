@@ -4,10 +4,10 @@
 #include "Door.h"
 
 namespace { // このcpp以外では使えない
-	static const float Gravity = 0.01f; // 重力加速度(正の値)
+	static const float Gravity = 0.008f; // 重力加速度(正の値)
 	// C++の定数定義（型が付く）
 	static const float JumpPower = 0.3f;
-	static const float RotationSpeed = 3.0f; // 回転速度(度)
+	static const float RotationSpeed = 1.5f; // 回転速度(度)
 	static const float DeadLine = -7.0f;//死亡する高さ
 	static const float MoveSpeed = 0.1f;
 	static const int MAX_AIRJUMP = 1;
@@ -38,10 +38,12 @@ Player::Player()
 	state = sOnGround;
 	Timer = 0;
 	boundTime = 0.2;
+	waitTime = 0;
 	speedY = 0;
 	airJump = 0;
-
-	KnockBackRate = 0.7f;
+	defKBR = 0.7f;
+	KnockBackRate = defKBR;
+	dangerTime = 0;
 }
 
 Player::~Player()
@@ -76,7 +78,12 @@ void Player::Update()
 	case sJump:
 		UpdateJump();
 		break;
+	case sStop:
+		Stop();
+
 	}
+	
+
 	
 	//死亡処理Todo:死亡状態のUpdateを作成する（後回し）
 	if (transform.position.y <= DeadLine)
@@ -85,37 +92,7 @@ void Player::Update()
 		DestroyMe();
 	}
 
-	//プレイヤー探索
-	std::list<Player*> objs = ObjectManager::FindGameObjects<Player>();
-
-	for (auto obj : objs)
-	{
-		if (obj != this)
-		{
-			float radius = 1.5f;//スフィアが小さすぎると判定でエラーが起きてしまうので注意
-			SphereCollider coll(transform.position + VECTOR3(0, radius, 0), radius);
-			VECTOR3 push;
-			if (ThrouthCheckStoM(obj, coll, &push, speed, 100))
-			{
-				if (speed.Length() < obj->GetVec().Length())
-				{
-					speed = obj->GetVec()*2;
-					obj->SetVec(VECTOR3(0,0,0));
-				}
-				else if(speed.Length() > obj->GetVec().Length())
-				{
-					obj->SetVec(speed*2);
-					speed = VECTOR3(0, 0, 0);
-				}
-				else
-				{
-					speed = VECTOR3(0, 0, 0);
-					obj->SetVec(VECTOR3(0, 0, 0));
-				}
-			}
-		}
-	}
-
+	
 }
 
 void Player::Draw()
@@ -124,7 +101,10 @@ void Player::Draw()
 	sprintf_s<64>(str, "%dP Y: %f", plNo,transform.position.y);//printfの形で文字列に入れてくれる
 
 	GameDevice()->m_pFont->Draw(
-		600, plNo * 50 + 50, str, 32, RGB(255, 255, 255));
+		500, plNo * 50 + 50, str, 32, RGB(255, 255, 255));
+
+	sprintf_s<64>(str, "%3.2f%%",  (KnockBackRate-defKBR) / (2.0f-defKBR));
+	GameDevice()->m_pFont->Draw(800, plNo * 50 + 50, str, 32, RGB(255, 255, 255));
 
 	//Object3D::Draw();//継承元の関数を呼ぶ
 	colMesh->Render(transform.matrix());
@@ -135,6 +115,25 @@ void Player::Draw()
 	spr.DrawLine3D(transform.position
 				,  transform.position + VECTOR3(Dir.x*10,0, Dir.z*10), RGB(130, 160, 130), 0.9f);
 
+}
+
+void Player::Stop()
+{
+	waitTime++;
+	if (waitTime >= wait)
+	{
+		waitTime = 0;
+		state = (State)changeState;
+	}
+}
+
+void Player::Stop(float time, int st)
+{
+	if(state != sStop)
+	state = sStop;
+	changeState = st;
+	wait = time;
+	
 }
 
 
@@ -229,6 +228,27 @@ SphereCollider Player::Collider()
 	return col;
 }
 
+void Player::KnockBack(Player* atacker, Player* difender)
+{
+	float roteA = fabs(atacker->Rotation().x);
+	float roteD = fabs(difender->Rotation().x);
+
+	if (roteA > roteD) {//攻撃側の方が傾いている場合
+		difender->AddKBR(0.4f);//相手の吹っ飛び率を増やす
+	}
+	else if (roteA == roteD)//攻撃側と受け側の傾きが同じ場合
+	{
+		difender->AddKBR(0.3f);//相手の吹っ飛び率を増やす
+	}
+	else//受け側の方が傾いている場合
+	{
+		difender->AddKBR(0.1f);//相手の吹っ飛び率を増やす
+	}
+
+	difender->SetVec(atacker->GetVec() * GetKBR());
+	atacker->SetVec( VECTOR3(0, 0, 0));
+}
+
 void Player::UpdateOnGround()
 {
 	CDirectInput* DI = GameDevice()->m_pDI;
@@ -299,10 +319,10 @@ void Player::UpdateJump()
 
 		//animator->MergePlay(aRun);
 
-		transform.rotation.x += RotationSpeed / 180.0f * XM_PI/3;
+		transform.rotation.x += RotationSpeed / 180.0f * XM_PI;
 	}
 	else if (DI->CheckKey(KD_DAT, inputBack)) {//後ボタン
-		transform.rotation.x -= RotationSpeed / 180.0f * XM_PI/3;
+		transform.rotation.x -= RotationSpeed / 180.0f * XM_PI;
 	}
 	if (DI->CheckKey(KD_DAT, inputLeft)) {//左ボタン
 		transform.rotation.y -= RotationSpeed / 180.0f * XM_PI;
@@ -404,6 +424,11 @@ void Player::UpdateJump()
 			//if (ThrouthCheckStoM(pl, coll, &push, speed, 1000))
 			if(length.Length() < (radius *2))
 			{
+				//ヒットストップ
+				int hitStop = 20;//20フレーム
+				Stop(hitStop, sJump);
+				pl->Stop(hitStop, sJump);
+
 				//接触した際にある程度離す処理dd
 				VECTOR3 toMe = transform.position - pl->Position() ;
 				push = toMe / 2;
@@ -414,20 +439,12 @@ void Player::UpdateJump()
 				//自分の速度のほうが早かった場合
 				if (speed.Length() > pl->GetVec().Length())
 				{
-					KnockBackRate += 0.3f;
-
-					pl->SetVec(speed * KnockBackRate);
-					speed = VECTOR3(0,0,0);
-					
+					KnockBack(this,pl);
 				}
 				//相手の速度のほうが早かった場合
 				else if(speed.Length() < pl->GetVec().Length())
 				{
-					KnockBackRate += 0.3f;
-
-					
-					speed = pl->GetVec() * KnockBackRate;
-					pl->SetVec(VECTOR3(0,0,0));
+					KnockBack(pl, this);
 				}
 				//速度が同じだった場合
 				else
@@ -435,6 +452,8 @@ void Player::UpdateJump()
 					speed = VECTOR3();
 					pl->SetVec(VECTOR3());
 				}
+
+				
 				
 			}
 		}

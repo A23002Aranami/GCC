@@ -9,6 +9,9 @@ public:
 	~Player();
 	void Update() override;
 	void Draw()override;
+	void Stop();
+	void Stop(float time, int st);
+
 	//自分が何番目のプレイヤーかを判定するための数値を設定
 	void SetPlNo(int no) { plNo = no; }
 
@@ -37,11 +40,29 @@ public:
 	void LoadColMesh(std::string meshName);
 	SphereCollider Collider() override;
 	
+	//移動ベクトルのセッター・ゲッター
 	void SetVec(VECTOR3 vec) { speed = vec; }
 	VECTOR3 GetVec() { return speed; }
+
+	//吹っ飛び率のセッターゲッター
+	void AddKBR(float KBR) { KnockBackRate += KBR; }//吹っ飛び率加算
+	float GetKBR() { return KnockBackRate; }
+
+	/// <summary>
+	/// ヒット時の吹っ飛び処理
+	/// </summary>
+	/// <param name="atacker">攻撃側</param>
+	/// <param name="difender">攻撃を受ける側</param>
+	void KnockBack(Player* atacker, Player* difender);
+
+	
+
 	static int menNum;//プレイヤーの人数
 
+	int GetDangerTime() { return dangerTime; }
+
 	int plNo;//プレイヤー番号
+
 private:
 	float speedY; // Yの速度
 	VECTOR3 speed;//移動速度
@@ -73,16 +94,22 @@ private:
 	enum State {
 		sOnGround = 0,
 		sJump,
+		sStop,
 	};
 	State state;
 	void UpdateOnGround();
 	void UpdateJump();
 
+	float defKBR;//初期吹っ飛び率
 	float KnockBackRate;//ふっとび率
 
 	CFbxMesh* colMesh;
 	//危険地帯にいる時間
-	int DengerTime;
+	int dangerTime;
+
+	int waitTime;//Stop()の待ち時間
+	int wait;
+	int changeState;
 	int frame; // アニメーションのフレームを数える
 
 	
