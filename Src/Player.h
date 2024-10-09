@@ -78,8 +78,11 @@ private:
 	void UpdateOnGround();
 	void UpdateJump();
 
+	float KnockBackRate;//ふっとび率
+
 	CFbxMesh* colMesh;
-	
+	//危険地帯にいる時間
+	int DengerTime;
 	int frame; // アニメーションのフレームを数える
 
 	

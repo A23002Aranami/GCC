@@ -7,7 +7,7 @@ namespace { // このcpp以外では使えない
 	static const float Gravity = 0.01f; // 重力加速度(正の値)
 	// C++の定数定義（型が付く）
 	static const float JumpPower = 0.3f;
-	static const float RotationSpeed = 5.0f; // 回転速度(度)
+	static const float RotationSpeed = 3.0f; // 回転速度(度)
 	static const float DeadLine = -7.0f;//死亡する高さ
 	static const float MoveSpeed = 0.1f;
 	static const int MAX_AIRJUMP = 1;
@@ -40,6 +40,8 @@ Player::Player()
 	boundTime = 0.2;
 	speedY = 0;
 	airJump = 0;
+
+	KnockBackRate = 0.7f;
 }
 
 Player::~Player()
@@ -97,12 +99,12 @@ void Player::Update()
 			{
 				if (speed.Length() < obj->GetVec().Length())
 				{
-					speed = obj->GetVec();
+					speed = obj->GetVec()*2;
 					obj->SetVec(VECTOR3(0,0,0));
 				}
 				else if(speed.Length() > obj->GetVec().Length())
 				{
-					obj->SetVec(speed);
+					obj->SetVec(speed*2);
 					speed = VECTOR3(0, 0, 0);
 				}
 				else
@@ -412,14 +414,19 @@ void Player::UpdateJump()
 				//自分の速度のほうが早かった場合
 				if (speed.Length() > pl->GetVec().Length())
 				{
-					pl->SetVec(speed);
+					KnockBackRate += 0.3f;
+
+					pl->SetVec(speed * KnockBackRate);
 					speed = VECTOR3(0,0,0);
 					
 				}
 				//相手の速度のほうが早かった場合
 				else if(speed.Length() < pl->GetVec().Length())
 				{
-					speed = pl->GetVec();
+					KnockBackRate += 0.3f;
+
+					
+					speed = pl->GetVec() * KnockBackRate;
 					pl->SetVec(VECTOR3(0,0,0));
 				}
 				//速度が同じだった場合
