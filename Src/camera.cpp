@@ -39,10 +39,12 @@ void Camera::Update()
 		if (minX.x > pl->Position().x)
 		{
 			minX = pl->Position();
+			minX.y = 0;//高さの情報は考慮しない
 		}
 		else if (maxX.x < pl->Position().x)
 		{
 			maxX = pl->Position();
+			maxX.y = 0;//高さの情報は考慮しない
 		}
 	}
 
@@ -54,10 +56,28 @@ void Camera::Update()
 	centroid = centroid / VECTOR3(players.size(), players.size(), players.size());
 	Look = centroid;
 
+	float back = 0;
+	float heightMax = 5.0f;
+	if (Look.y > heightMax)//高さが一定を超えたら注視点を挙げずに、カメラを後ろにさげる
+	{
+		back = Look.y - heightMax;
+		Look.y = heightMax;
+	}
+
 	VECTOR3 disVec = maxX-minX;
 	distance = fabsf(disVec.Length());
-	CamPos = centroid - VECTOR3(0,0, 10 + distance);//デフォルトのカメラ位置
+	CamPos = centroid - VECTOR3(0,0+back, 10 + distance + back);//デフォルトのカメラ位置
 	CamPos.y = 5;
+
+	float maxZ = -8;
+	if (CamPos.z > maxZ)
+	{
+		CamPos.y += fabs(CamPos.z - maxZ);
+		CamPos.z = maxZ;
+	}
+
+
+
 
 	changeTime += 1.0f / 60.0f;//60分の1秒加算される
 	float timeRate = changeTime / ChangeTimeLimit;//0.0～0.1

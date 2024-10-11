@@ -64,6 +64,9 @@ public:
 	int plNo;//プレイヤー番号
 
 private:
+
+	void Input();
+
 	float speedY; // Yの速度
 	VECTOR3 speed;//移動速度
 	float Timer;

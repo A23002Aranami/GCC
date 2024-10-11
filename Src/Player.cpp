@@ -2,12 +2,13 @@
 //#include "../Libs/Imgui/imgui.h"
 #include "Dancer.h"
 #include "Door.h"
+#include "PlayerManager.h"
 
 namespace { // このcpp以外では使えない
 	static const float Gravity = 0.008f; // 重力加速度(正の値)
 	// C++の定数定義（型が付く）
-	static const float JumpPower = 0.3f;
-	static const float RotationSpeed = 1.5f; // 回転速度(度)
+	static const float JumpPower = 0.25f;
+	static const float RotationSpeed = 3.0f; // 回転速度(度)
 	static const float DeadLine = -7.0f;//死亡する高さ
 	static const float MoveSpeed = 0.1f;
 	static const int MAX_AIRJUMP = 1;
@@ -89,6 +90,7 @@ void Player::Update()
 	if (transform.position.y <= DeadLine)
 	{
 		//SceneManager::ChangeScene("ResultScene");
+		ObjectManager::FindGameObject<PlayerManager>()->ReduceSurvivor(plNo);
 		DestroyMe();
 	}
 
@@ -249,19 +251,19 @@ void Player::KnockBack(Player* atacker, Player* difender)
 	atacker->SetVec( VECTOR3(0, 0, 0));
 }
 
-void Player::UpdateOnGround()
+void Player::Input()
 {
 	CDirectInput* DI = GameDevice()->m_pDI;
 
-	Timer+= SceneManager::DeltaTime();
-	if (DI->CheckKey(KD_DAT, inputForward)) {//前ボタン
-		transform.rotation.x += RotationSpeed / 180.0f * XM_PI;
+	if (DI->CheckKey(KD_DAT, inputForward)
+		&& transform.rotation.x <= MAX_ROTATION) {//前ボタン
 
-	} else if (DI->CheckKey(KD_DAT, inputBack)) {//後ボタン
-				transform.rotation.x -= RotationSpeed / 180.0f * XM_PI;
+		//animator->MergePlay(aRun);
+
+		transform.rotation.x += RotationSpeed / 180.0f * XM_PI /3;
 	}
-	else {
-		//animator->MergePlay(aIdle);
+	else if (DI->CheckKey(KD_DAT, inputBack)) {//後ボタン
+		transform.rotation.x -= RotationSpeed / 180.0f * XM_PI /3;
 	}
 	if (DI->CheckKey(KD_DAT, inputLeft)) {//左ボタン
 		transform.rotation.y -= RotationSpeed / 180.0f * XM_PI;
@@ -269,6 +271,14 @@ void Player::UpdateOnGround()
 	if (DI->CheckKey(KD_DAT, inputRight)) {//右ボタン
 		transform.rotation.y += RotationSpeed / 180.0f * XM_PI;
 	}
+}
+
+void Player::UpdateOnGround()
+{
+	CDirectInput* DI = GameDevice()->m_pDI;
+
+	Timer+= SceneManager::DeltaTime();
+	Input();
 
 	if (transform.rotation.x > MAX_ROTATION)
 	{
@@ -314,22 +324,7 @@ void Player::UpdateJump()
 {
 	CDirectInput* DI = GameDevice()->m_pDI;
 
-	if (DI->CheckKey(KD_DAT, inputForward)
-		&& transform.rotation.x <= MAX_ROTATION) {//前ボタン
-
-		//animator->MergePlay(aRun);
-
-		transform.rotation.x += RotationSpeed / 180.0f * XM_PI;
-	}
-	else if (DI->CheckKey(KD_DAT, inputBack)) {//後ボタン
-		transform.rotation.x -= RotationSpeed / 180.0f * XM_PI;
-	}
-	if (DI->CheckKey(KD_DAT, inputLeft)) {//左ボタン
-		transform.rotation.y -= RotationSpeed / 180.0f * XM_PI;
-	}
-	if (DI->CheckKey(KD_DAT, inputRight)) {//右ボタン
-		transform.rotation.y += RotationSpeed / 180.0f * XM_PI;
-	}
+	Input();
 
 	//空中ジャンプ
 	if (DI->CheckKey(KD_TRG, inputJump) && airJump < MAX_AIRJUMP) {//ジャンプボタン
@@ -425,7 +420,7 @@ void Player::UpdateJump()
 			if(length.Length() < (radius *2))
 			{
 				//ヒットストップ
-				int hitStop = 20;//20フレーム
+				int hitStop = 5;//20フレーム
 				Stop(hitStop, sJump);
 				pl->Stop(hitStop, sJump);
 

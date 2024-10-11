@@ -32,6 +32,7 @@ Block::Block()
 	bType = Blank;
 	//座標を0,0,0で初期化する
 	transform.position = VECTOR3(0,0,0);
+	transform.scale = VECTOR3(1.0f, 0.90f, 1.0f);
 
 	//タグをセットする
 	SetTag("STAGEOBJ");
@@ -56,7 +57,7 @@ void Block::SetStatus(float x, float y, float z, int type)
 		DestroyMe();
 		break;
 	case Blank:
-		SetMesh("Data/Map/MapBlank.mesh");
+		SetMesh("Data/Map/wallStone01.mesh");
 		break;
 	default:
 		break;

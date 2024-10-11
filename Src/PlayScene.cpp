@@ -10,10 +10,11 @@
 #include "DrawScore.h"
 #include "MochiTest.h"
 #include "Map.h"
+#include "PlayerManager.h"
 
 PlayScene::PlayScene()
 {
-	CsvReader* csv = new CsvReader("Data/map00.csv");
+	CsvReader* csv = new CsvReader("Data/config.csv");
 	
 	assert(csv->GetLines() > 0);//値が入っていない場合エラーにするための処理
 	
@@ -36,18 +37,13 @@ PlayScene::PlayScene()
 				//キーバインドの設定
 				p->SetKeyBind(csv->GetKeyDef(i, 4), csv->GetKeyDef(i, 5), csv->GetKeyDef(i, 6), csv->GetKeyDef(i, 7), csv->GetKeyDef(i, 8),csv->GetKeyDef(i,9), csv->GetKeyDef(i, 10));
 				//p->LoadMesh(csv->GetString(i,11));
-				p->LoadColMesh(csv->GetString(i, 12));
+				
+				p->SetRotation(0, csv->GetFloat(i, 11)*DegToRad, 0);
 
+				p->LoadColMesh(csv->GetString(i, 12));
 				//プレイヤーの番号を割り振り
 				p->SetPlNo(players);
 				obj = p;
-			}
-			else if (str == "DANCER") {//DANCERの数値入力
-
-				obj = Instantiate<Dancer>();
-			}
-			else if (str == "DOOR") {//DOORの数値入力
-				obj = Instantiate<Door>();
 			}
 			else if (str == "GROUND") {//GROUNDの数値入力
 				obj = Instantiate<Ground>();
@@ -73,28 +69,14 @@ PlayScene::PlayScene()
 
 			Instantiate<ScoreDraw>();
 
-#if 0
-			Instantiate<Ground>();
-			Door* door = Instantiate<Door>();
-			door->SetPosition(40, 0, -40);
-			// constは、書き換え禁止という意味
-
-			const VECTOR3 dancerPos[] = {
-				VECTOR3(0,0,20),
-				VECTOR3(20,0,0),
-				VECTOR3(-20,0,-20),
-				VECTOR3(-25,0,-25),
-				VECTOR3(30,0,-25),
-			};
-			for (VECTOR3 p : dancerPos) {
-				Dancer* d = Instantiate<Dancer>();
-				d->SetPosition(p);
-			}
-#endif
+			//Instantiate<Ground>();
+			
+			
 		}
 	}
 
 	Instantiate<Map>();
+	new PlayerManager(players);//プレイヤーマネージャー実体化
 }
 
 PlayScene::~PlayScene()
@@ -103,16 +85,19 @@ PlayScene::~PlayScene()
 
 void PlayScene::Update()
 {
-	//Playerが残り一人になったらゲーム終了
-	std::list< Player* > pls = ObjectManager::FindGameObjects<Player>();
-	if (pls.size() <= 1) {
-		Score* sc = ObjectManager::FindGameObject<Score>();
-		Player* pl = ObjectManager::FindGameObject<Player>();
-		sc->SetWinner( pl->plNo);
-		SceneManager::ChangeScene("ResultScene");
-	}
+	//
+	////Playerが残り一人になったらゲーム終了
+	//std::list< Player* > pls = ObjectManager::FindGameObjects<Player>();
+	//if (pls.size() <= 1) {
+	//	Score* sc = ObjectManager::FindGameObject<Score>();
+	//	Player* pl = ObjectManager::FindGameObject<Player>();
+	//	sc->SetWinner( pl->plNo);
+	//	SceneManager::ChangeScene("ResultScene");
+	//}
 }
 
 void PlayScene::Draw()
 {
 }
+
+
